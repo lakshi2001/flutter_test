@@ -17,8 +17,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // TODO: Add providers for state management
-        // Hint: Use ChangeNotifierProvider for both search and user profile
+        // ✅ Add state management providers here
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => SearchProvider()),
       ],
       child: MaterialApp(
         title: 'Flutter Coding Test',
