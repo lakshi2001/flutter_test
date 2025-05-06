@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -10,21 +11,26 @@ class SettingsScreen extends StatelessWidget {
       child: CupertinoPageScaffold(
         child: CustomScrollView(
           slivers: [
-            // TODO: Implement CupertinoSliverNavigationBar
-            // Requirements:
-            // - Use CupertinoSliverNavigationBar
-            // - Display a large title when fully expanded
-            // - Include a CupertinoSearchTextField as the bottom widget
-            // - Configure bottomMode to hide search field on scroll
-            // - Navigation bar should snap between expanded and collapsed states
-            
+            CupertinoSliverNavigationBar(
+              largeTitle: const Text('Settings'),
+              stretch: true,
+              backgroundColor: CupertinoColors.systemGroupedBackground,
+              trailing: const Icon(CupertinoIcons.gear),
+            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
+                child: CupertinoSearchTextField(
+                  placeholder: 'Search settings',
+                  onChanged: (value) {},
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Placeholder settings items
                     _buildSettingsItem(
                       'Notifications',
                       CupertinoIcons.bell,
@@ -44,37 +50,56 @@ class SettingsScreen extends StatelessWidget {
                       'Terms & Conditions',
                       CupertinoIcons.doc_text,
                       onTap: () {
-                        // TODO: Implement showCupertinoSheet
-                        // Requirements:
-                        // - Use the new showCupertinoSheet function
-                        // - Show placeholder terms and conditions text
-                        // - Allow dismissal via drag-to-dismiss gesture
+                        showCupertinoModalPopup(
+                          context: context,
+                          builder: (_) => CupertinoActionSheet(
+                            title: const Text('Terms & Conditions'),
+                            message: const Text(
+                              'These are placeholder Terms & Conditions.\n\nSwipe down to dismiss.',
+                            ),
+                            cancelButton: CupertinoActionSheetAction(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Close'),
+                            ),
+                          ),
+                        );
                       },
                     ),
-                    
                     const SizedBox(height: 32),
-                    const Text(
-                      'Profile Card',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Profile Card',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      alignment: Alignment.center,
-                      // TODO: (Bonus) Apply custom visual effect
-                      // Requirements:
-                      // - Apply a custom visual effect using ImageFilter.shader 
-                      // - Create a simple shader (gradient or noise effect)
-                      child: const Text(
-                        'Profile Card',
-                        style: TextStyle(fontSize: 20),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                        child: Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color.fromARGB(50, 173, 216, 230),
+                                Color.fromARGB(80, 135, 206, 250),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          alignment: Alignment.center,
+                          child: const Text(
+                            'Profile Card',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
                       ),
                     ),
                   ],
