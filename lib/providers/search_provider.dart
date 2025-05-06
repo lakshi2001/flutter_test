@@ -2,44 +2,73 @@ import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 import '../services/search_service.dart';
 
-// TODO: Implement SearchProvider using ChangeNotifier
-// Requirements:
-// - Create a class that extends ChangeNotifier
-// - Use BehaviorSubject for search query stream
-// - Apply rxdart operators (debounceTime, distinct, switchMap)
-// - Handle potential errors gracefully
-// - Emit states for Loading, Success, Error, and Empty
-
 enum SearchState {
-  initial,
-  loading,
-  success,
-  error,
-  empty,
+initial, 
+loading, 
+success, 
+error, 
+empty 
 }
 
 class SearchProvider extends ChangeNotifier {
   final SearchService _searchService;
-  
-  // TODO: Add state variables
-  
-  // TODO: Add BehaviorSubject for search queries
-  
-  SearchProvider({SearchService? searchService}) 
-      : _searchService = searchService ?? SearchService() {
-    // TODO: Initialize search stream with operators
-    // - Use debounceTime (300ms)
-    // - Use distinct operator
-    // - Use switchMap for API calls
-    // - Handle errors within stream
+
+  SearchState _state = SearchState.initial;
+  List<String> _results = [];
+  String _errorMessage = '';
+
+  SearchState get state => _state;
+  List<String> get results => _results;
+  String get errorMessage => _errorMessage;
+
+  final BehaviorSubject<String> _querySubject = BehaviorSubject<String>();
+
+  SearchProvider({SearchService? searchService})
+    : _searchService = searchService ?? SearchService() {
+    _querySubject
+        .debounceTime(const Duration(milliseconds: 300))
+        .distinct() 
+        .switchMap((query) {
+         
+          _state = SearchState.loading;
+          notifyListeners();
+
+          if (query.isEmpty) {
+           
+            _state = SearchState.empty;
+            _results = [];
+            notifyListeners();
+            return Stream.value([]);
+          }
+
+       
+          return Stream.fromFuture(_searchService.searchProducts(query))
+              .doOnError((error, stackTrace) {
+                _state = SearchState.error;
+                _errorMessage = error.toString();
+                notifyListeners();
+              })
+              .handleError((error) {
+                _state = SearchState.error;
+                _errorMessage = 'An error occurred';
+                notifyListeners();
+              });
+        })
+        .listen((products) {
+          _state = products.isEmpty ? SearchState.empty : SearchState.success;
+          _results = products.cast<String>(); 
+          notifyListeners();
+        });
   }
-  
-  // TODO: Implement methods to update search query
-  
-  // TODO: Implement clean up for streams
+
+
+  void updateSearchQuery(String query) {
+    _querySubject.add(query);
+  }
+
   @override
   void dispose() {
-    // TODO: Clean up any streams
+    _querySubject.close(); 
     super.dispose();
   }
 }
